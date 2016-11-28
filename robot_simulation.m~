@@ -42,12 +42,9 @@ Yplat = sin(Theta);
 % grid on;
 COMX = (l/2 + r2)*cos(Theta);
 COMY = (l/2 + r2)*sin(Theta);
-for i=1:length(Theta)
-    cla
-    line([COMX(i) -l/2*cos(Theta(i)), COMX(i) + l/2*cos(Theta(i))], [COMY(i) -l/2*sin(Theta(i)), COMY(i) + l/2*sin(Theta(i))]);
-    axis([-2 2 -2 2]);
-    drawnow;
-end
+for i=1:length(Theta):
+    
+    line([COMX(i -l/2*cos(Theta), COMX + l/2*cos(Theta)], [COMY -l/2*sin(Theta), COMY + l/2*sin(Theta)]);
 title('Self Balancing Robot');
 xlabel('X (m)');
 ylabel('Y (m)');
