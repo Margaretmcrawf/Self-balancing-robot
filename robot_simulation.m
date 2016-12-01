@@ -23,7 +23,7 @@ r2 = .04; %outer radius of wheel
 l = .1;
 I_wheel = m_wheel/2 * (r1^2 + r2^2);
 I_plat = m_plat*l^2/12;
-Mmotor = -1;
+Mmotor = .1;
 
 %%%%% also vector of starting conditions also go in here
 
