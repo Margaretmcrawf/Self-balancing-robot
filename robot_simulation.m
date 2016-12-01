@@ -17,13 +17,13 @@ close all;
 %values are all bs for now
 g = 9.8;
 m_wheel = 1;
-m_plat = 1;
+m_plat = 100;
 r1 = .02; %inner radius of wheel
 r2 = .04; %outer radius of wheel
 l = .1;
 I_wheel = m_wheel/2 * (r1^2 + r2^2);
-I_plat = m_plat*l^2/12;
-Mmotor = .1;
+I_plat = (m_plat*l^2)/3;
+Mmotor = 0;
 
 %%%%% also vector of starting conditions also go in here
 
@@ -41,14 +41,14 @@ Yplat = sin(Theta);
 
 % comet3(U);
 % grid on;
-COMX = (l/2)*cos(Theta);
+COMX = ((l/2)*cos(Theta)) + X;
 COMY = (l/2)*sin(Theta);
 for i=1:length(Theta)
     cla
     hold on
-    plot(X(i) + COMX(i), COMY(i), '*');
-    line([X(i) + COMX(i) - l/2*cos(Theta(i)), X(i) + COMX(i) + l/2*cos(Theta(i))], [COMY(i) - l/2*sin(Theta(i)), COMY(i) + l/2*sin(Theta(i))]);
-    axis([-.5 .5 -.5 .5]);
+    plot(COMX(i), COMY(i), '*');
+    line([COMX(i) - l/2*cos(Theta(i)), COMX(i) + l/2*cos(Theta(i))], [COMY(i) - l/2*sin(Theta(i)), COMY(i) + l/2*sin(Theta(i))]);
+    axis([-.1 .1 -.1 .1]);
     drawnow;
     pause(.1);
 end
