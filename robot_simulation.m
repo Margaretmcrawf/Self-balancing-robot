@@ -28,9 +28,9 @@ Mmotor = 0;
 
 %PID
 settheta = pi/2;
-Pgain = 50;
-Igain = .01;
-Dgain = 100;
+Pgain = -50;
+Igain = -.01;
+Dgain = -1;
 Istate = 0;
 error = 0;
 prev_error = 0;
@@ -90,17 +90,19 @@ function res = balance(~, vals)
     vtheta = vals(4);
     motor = vals(5);
     
-    error = settheta - theta;
-    if (abs(error) > 0)
+    error = theta - settheta;
+    if (abs(error) > 0.0001)
         Pterm = Pgain * error;
         Istate = Istate + error;
         Iterm = Igain * Istate;
-        Dterm = Dgain * (error - prev_error);
+        Dterm = Dgain * vtheta;
         motor = Pterm + Iterm + Dterm;
         disp(motor);
     
     else
         motor = 0;
+        disp(motor);
+
     
     end
     Mmotor = motor;
