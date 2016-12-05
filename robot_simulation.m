@@ -16,11 +16,11 @@ close all;
 
 %values are all bs for now
 g = 9.8;
-m_wheel = 1;
-m_plat = 1;
+m_wheel = 0.2; %kg
+m_plat = 0.5; %kg
 r1 = .02; %inner radius of wheel
 r2 = .04; %outer radius of wheel
-l = .05;
+l = .15;
 I_wheel = m_wheel/2 * (r1^2 + r2^2);
 I_plat = (m_plat*l^2)/3;
 Mmotor = 1;
@@ -31,7 +31,7 @@ Mmotor = 1;
 vals0 = [0, 2*pi/3,0,0];
 
 options = odeset('Events', @events);
-[T, U] = ode23s(@balance, [0,2], vals0, options);
+[T, U] = ode23s(@balance, [0,1], vals0, options);
 X = U(:,1);
 Theta = U(:,2);
 Xplat = cos(Theta);
@@ -46,9 +46,11 @@ COMY = (l)*sin(Theta);
 for i=1:length(Theta)
     cla
     hold on
-    plot(COMX(i), COMY(i), '*');
+    refline(0, -r2);
+    plot(COMX(i), COMY(i), '*k');
+    plot(COMX(i) - l*cos(Theta(i)), COMY(i) - l*sin(Theta(i)), '*r');
     line([COMX(i) - l*cos(Theta(i)), COMX(i) + l*cos(Theta(i))], [COMY(i) - l*sin(Theta(i)), COMY(i) + l*sin(Theta(i))]);
-    axis([-.1 .1 -.1 .1]);
+    axis([-.5 .1 -.1 .4]);
     drawnow;
     pause(.1);
 end
@@ -80,17 +82,17 @@ function res = balance(~, vals)
     
     %equations matrix
     %   x'', theta'', Fpx, Fpy, Ff
-    A = [m_plat, -m_plat*l*sin(theta), 1, 0, 0;...
-        0, m_plat*l*cos(theta), 0, 1, 0;...
+    A = [m_plat, m_plat*l*sin(theta), 1, 0, 0;...
+        0, m_plat*l*cos(theta), 0, -1, 0;...
         0, -I_plat, -l *sin(theta), l* cos(theta), 0;...
         m_wheel, 0, -1, 0, -1;...
         I_wheel/r2, 0, 0, 0, r2];
     
     B = [m_plat*l*vtheta^2*cos(theta);...
-        -m_plat*g + m_plat*l*vtheta^2*sin(theta);...
+        m_plat*g - m_plat*l*vtheta^2*sin(theta);...
         Mmotor;...
         0;...
-        -Mmotor];
+        Mmotor];
     
     Xvals = A^(-1)*B;
     dvx = Xvals(1);

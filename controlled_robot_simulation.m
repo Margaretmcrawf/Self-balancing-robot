@@ -1,7 +1,6 @@
-%uncontrolled self balancing robot simulation.
+%controlled robot simulation, building up to PID.
 
-
-function robot_simulation()
+function controlled_robot_simulation()
 
 %initial variables
 
@@ -17,13 +16,13 @@ close all;
 %values are all bs for now
 g = 9.8;
 m_wheel = 1;
-m_plat = 100;
+m_plat = 1;
 r1 = .02; %inner radius of wheel
 r2 = .04; %outer radius of wheel
-l = .1;
+l = .05;
 I_wheel = m_wheel/2 * (r1^2 + r2^2);
 I_plat = (m_plat*l^2)/3;
-Mmotor = 0;
+Mmotor = 1;
 
 %%%%% also vector of starting conditions also go in here
 
@@ -41,13 +40,13 @@ Yplat = sin(Theta);
 
 % comet3(U);
 % grid on;
-COMX = ((l/2)*cos(Theta)) + X;
-COMY = (l/2)*sin(Theta);
+COMX = ((l)*cos(Theta)) + X;
+COMY = (l)*sin(Theta);
 for i=1:length(Theta)
     cla
     hold on
     plot(COMX(i), COMY(i), '*');
-    line([COMX(i) - l/2*cos(Theta(i)), COMX(i) + l/2*cos(Theta(i))], [COMY(i) - l/2*sin(Theta(i)), COMY(i) + l/2*sin(Theta(i))]);
+    line([COMX(i) - l*cos(Theta(i)), COMX(i) + l*cos(Theta(i))], [COMY(i) - l*sin(Theta(i)), COMY(i) + l*sin(Theta(i))]);
     axis([-.1 .1 -.1 .1]);
     drawnow;
     pause(.1);
@@ -72,7 +71,6 @@ ylabel('Y (m)');
 
 %functions
 function res = balance(~, vals)
-
     x = vals(1);
     theta = vals(2);
     vx = vals(3);
@@ -82,7 +80,7 @@ function res = balance(~, vals)
     %   x'', theta'', Fpx, Fpy, Ff
     A = [m_plat, -m_plat*l*sin(theta), 1, 0, 0;...
         0, m_plat*l*cos(theta), 0, 1, 0;...
-        0, -I_plat, -l/2 *sin(theta), l/2 * cos(theta), 0;...
+        0, -I_plat, -l *sin(theta), l* cos(theta), 0;...
         m_wheel, 0, -1, 0, -1;...
         I_wheel/r2, 0, 0, 0, r2];
     
@@ -104,14 +102,14 @@ end
  function [value, isterminal, direction] = events(t, y)
         x = y(1);
         theta = y(2);
-        ypos = (l)*sin(theta);
+        ypos = (2*l)*sin(theta);
         isterminal = 1;
         direction = -1;
         value = ypos + r2;
  end
 
+    function M = getMotorMoment(theta, dtheta, ix, setpoint)
+        
+        M = 0;
+
 end
-
-
-
-
