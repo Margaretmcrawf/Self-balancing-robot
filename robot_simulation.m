@@ -1,4 +1,4 @@
-%uncontrolled self balancing robot simulation.
+%controlled self balancing robot simulation.
 
 
 function robot_simulation()
@@ -15,6 +15,16 @@ close all;
 %%%%% all starting state variables go here
 
 %values are all bs for now
+% g = 9.8;
+% m_wheel = .076; %kg for two wheels
+% m_plat = 0.368; %kg
+% r1 = .023; %inner radius of wheel
+% r2 = .0325; %outer radius of wheel
+% l = .125; %m from base of platform to COM
+% I_wheel = m_wheel/2 * (r1^2 + r2^2);
+% I_plat = (m_plat*l^2)/3;
+% Mmotor = 0;
+
 g = 9.8;
 m_wheel = 0.2; %kg
 m_plat = 0.5; %kg
@@ -26,21 +36,21 @@ I_plat = (m_plat*l^2)/3;
 Mmotor = 0;
 
 
-%PID
+%PID 
 settheta = pi/2;
-Pgain = -50;
+Pgain = -256;
 Igain = -.01;
-Dgain = -1;
+Dgain = -2.5;
 Istate = 0;
 error = 0;
-prev_error = 0;
+
 
 
 %ODE computation
 vals0 = [0, 2*pi/3,0,0, Mmotor];
 
 options = odeset('Events', @events);
-[T, U] = ode45(@balance, [0,2], vals0, options);
+[T, U] = ode45(@balance, [0,.5], vals0, options);
 X = U(:,1);
 Theta = U(:,2);
 Xplat = cos(Theta);
@@ -48,21 +58,22 @@ Yplat = sin(Theta);
 
 %%%%%% Visualizations go here
 
-% comet3(U);
-% grid on;
 COMX = ((l)*cos(Theta)) + X;
 COMY = (l)*sin(Theta);
-for i=1:length(Theta)
-    cla
-    hold on
-    refline(0, -r2);
-    plot(COMX(i), COMY(i), '*k');
-    plot(COMX(i) - l*cos(Theta(i)), COMY(i) - l*sin(Theta(i)), '*r');
-    line([COMX(i) - l*cos(Theta(i)), COMX(i) + l*cos(Theta(i))], [COMY(i) - l*sin(Theta(i)), COMY(i) + l*sin(Theta(i))]);
-    axis([-.5 .5 -.1 .4]);
-    drawnow;
-%     pause(.05);
-end
+% for i=1:1:length(Theta)
+%     cla
+%     hold on
+%     refline(0, -r2);
+%     plot(COMX(i), COMY(i), '*k');
+%     plot(COMX(i) - l*cos(Theta(i)), COMY(i) - l*sin(Theta(i)), '*r');
+%     pos = [COMX(i) - l*cos(Theta(i))-r2 COMY(i) - l*sin(Theta(i))-r2 r2*2 r2*2];
+%     rectangle('Position', pos, 'Curvature', [1, 1]);
+%     line([COMX(i) - l*cos(Theta(i)), COMX(i) + l*cos(Theta(i))], [COMY(i) - l*sin(Theta(i)), COMY(i) + l*sin(Theta(i))]);
+%     axis([-.5 .5 -.5 .5]);
+%     drawnow;
+% %     pause(.05);
+% end
+
 title('Self Balancing Robot');
 xlabel('X (m)');
 ylabel('Y (m)');
@@ -79,10 +90,14 @@ title('Y pos');
 xlabel('time (s)');
 ylabel('Y (m)');
 
-
+figure
+plot(T, U(:,2));
+title('Theta');
+xlabel('time (s)');
+ylabel('Theta (rad)');
 
 %functions
-function res = balance(~, vals)
+function res = balance(t, vals)
 
     x = vals(1);
     theta = vals(2);
@@ -107,12 +122,11 @@ function res = balance(~, vals)
     end
     Mmotor = motor;
     
-    prev_error = error;
     %equations matrix
     %   x'', theta'', Fpx, Fpy, Ff
     A = [m_plat, -m_plat*l*sin(theta), 1, 0, 0;...
         0, -m_plat*l*cos(theta), 0, -1, 0;...
-        0, I_plat, -l *sin(theta), l* cos(theta), 0;...
+        0, -I_plat, -l *sin(theta), l* cos(theta), 0;...
         m_wheel, 0, -1, 0, -1;...
         I_wheel/r2, 0, 0, 0, r2];
     
