@@ -14,33 +14,32 @@ close all;
 
 %%%%% all starting state variables go here
 
-%values are all bs for now
-% g = 9.8;
-% m_wheel = .076; %kg for two wheels
-% m_plat = 0.368; %kg
-% r1 = .023; %inner radius of wheel
-% r2 = .0325; %outer radius of wheel
-% l = .125; %m from base of platform to COM
-% I_wheel = m_wheel/2 * (r1^2 + r2^2);
-% I_plat = (m_plat*l^2)/3;
-% Mmotor = 0;
-
 g = 9.8;
-m_wheel = 0.2; %kg
-m_plat = 0.5; %kg
-r1 = .02; %inner radius of wheel
-r2 = .04; %outer radius of wheel
-l = .15;
+m_wheel = .076; %kg for two wheels
+m_plat = 0.368; %kg
+r1 = .023; %inner radius of wheel
+r2 = .0325; %outer radius of wheel
+l = .125; %m from base of platform to COM
 I_wheel = m_wheel/2 * (r1^2 + r2^2);
 I_plat = (m_plat*l^2)/3;
 Mmotor = 0;
 
+% g = 9.8;
+% m_wheel = .2; %kg
+% m_plat = .5; %kg
+% r1 = .02; %inner radius of wheel
+% r2 = .04; %outer radius of wheel
+% l = .15;
+% I_wheel = m_wheel/2 * (r1^2 + r2^2);
+% I_plat = (m_plat*l^2)/3;
+% Mmotor = -1;
+
 
 %PID 
 settheta = pi/2;
-Pgain = -256;
+Pgain = -460;
 Igain = -.01;
-Dgain = -2.5;
+Dgain = -1.5;
 Istate = 0;
 error = 0;
 
@@ -50,7 +49,7 @@ error = 0;
 vals0 = [0, 2*pi/3,0,0, Mmotor];
 
 options = odeset('Events', @events);
-[T, U] = ode45(@balance, [0,.5], vals0, options);
+[T, U] = ode45(@balance, [0,.1], vals0, options);
 X = U(:,1);
 Theta = U(:,2);
 Xplat = cos(Theta);
@@ -60,41 +59,56 @@ Yplat = sin(Theta);
 
 COMX = ((l)*cos(Theta)) + X;
 COMY = (l)*sin(Theta);
-% for i=1:1:length(Theta)
-%     cla
-%     hold on
-%     refline(0, -r2);
-%     plot(COMX(i), COMY(i), '*k');
-%     plot(COMX(i) - l*cos(Theta(i)), COMY(i) - l*sin(Theta(i)), '*r');
-%     pos = [COMX(i) - l*cos(Theta(i))-r2 COMY(i) - l*sin(Theta(i))-r2 r2*2 r2*2];
-%     rectangle('Position', pos, 'Curvature', [1, 1]);
-%     line([COMX(i) - l*cos(Theta(i)), COMX(i) + l*cos(Theta(i))], [COMY(i) - l*sin(Theta(i)), COMY(i) + l*sin(Theta(i))]);
-%     axis([-.5 .5 -.5 .5]);
-%     drawnow;
-% %     pause(.05);
-% end
-
+while true
+    
+for i=1:1:length(Theta)
+    cla
+    hold on
+    refline(0, -r2);
+    %COM
+    plot(COMX(i), COMY(i), '*k');
+    %Wheel Pivot
+    plot(COMX(i) - l*cos(Theta(i)), COMY(i) - l*sin(Theta(i)), '*r');
+    %Wheel
+    pos = [COMX(i) - l*cos(Theta(i))-r2 COMY(i) - l*sin(Theta(i))-r2 r2*2 r2*2];
+    rectangle('Position', pos, 'Curvature', [1, 1]);
+    %Platform
+    line([COMX(i) - l*cos(Theta(i)), COMX(i) + l*cos(Theta(i))], [COMY(i) - l*sin(Theta(i)), COMY(i) + l*sin(Theta(i))]);
+    axis([-.5 .5 -.5 .5]);
+    drawnow;
+%     pause(.05);
+end
+end
 title('Self Balancing Robot');
 xlabel('X (m)');
 ylabel('Y (m)');
-
-figure
-plot(T, COMX-X);
-title('X pos');
-xlabel('time (s)');
-ylabel('X (m)');
-
-figure
-plot(T, COMY);
-title('Y pos');
-xlabel('time (s)');
-ylabel('Y (m)');
-
-figure
-plot(T, U(:,2));
-title('Theta');
-xlabel('time (s)');
-ylabel('Theta (rad)');
+% figure
+% hold on
+% plot(T, COMX - l*cos(Theta), 'LineWidth', 4);
+% plot(T, COMX, 'LineWidth', 4);
+% legend('Wheel COM', 'Platform COM');
+% % title('Small Wheel, Big Platform - No Moment');
+% title('COM on X axis - Unstable Equilibrium');
+% xlabel('time (s)');
+% ylabel('X(m)');
+% 
+% figure
+% plot(T, COMX-X);
+% title('X pos');
+% xlabel('time (s)');
+% ylabel('X (m)');
+% 
+% figure
+% plot(T, COMY);
+% title('Y pos');
+% xlabel('time (s)');
+% ylabel('Y (m)');
+% 
+% figure
+% plot(T, U(:,2), 'LineWidth', 4);
+% title('Theta - Experimental Critically Damped Control');
+% xlabel('time (s)');
+% ylabel('Theta (rad)');
 
 %functions
 function res = balance(t, vals)
@@ -132,7 +146,7 @@ function res = balance(t, vals)
     
     B = [m_plat*l*vtheta^2*cos(theta);...
         m_plat*g - m_plat*l*vtheta^2*sin(theta);...
-        Mmotor;...
+        -Mmotor;...
         0;...
         Mmotor];
     
